@@ -73,6 +73,7 @@ module "S3" {
   source                = "./4.s3"
   prefix                = var.prefix
   suffix                = var.suffix
+  region                = var.region
   AWS_ACCESS_KEY_ID     = var.AWS_ACCESS_KEY_ID
   AWS_SECRET_ACCESS_KEY = var.AWS_SECRET_ACCESS_KEY
 }

@@ -1,10 +1,10 @@
-data "databricks_aws_assume_role_policy" "thisiam" {
+data "databricks_aws_assume_role_policy" "this" {
   external_id = var.databricks_account_id
 }
 
 resource "aws_iam_role" "cross_account_role" {
   name               = join("", [var.prefix, "-", "crossaccounts",  "-", var.suffix])
-  assume_role_policy = data.databricks_aws_assume_role_policy.thisiam.json
+  assume_role_policy = data.databricks_aws_assume_role_policy.this.json
   # tags             = join("", [var.prefix, "-", "project", "-", var.suffix])
 }
 

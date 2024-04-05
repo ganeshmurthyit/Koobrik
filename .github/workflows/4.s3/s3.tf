@@ -6,6 +6,7 @@ resource "aws_s3_bucket" "dbBucket" {
   bucket = join("", [var.prefix, "-", "dbstoragebucket", "-", var.suffix])
   force_destroy = true
   acl    = "private"
+  # region = var.region
 }
 /*
 resource "aws_s3_bucket_acl" "dbBucket" {

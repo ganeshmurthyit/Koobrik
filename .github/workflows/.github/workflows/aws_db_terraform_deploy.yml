@@ -1,0 +1,188 @@
+name: Terraform AWS Deployment
+on:
+  push:
+    branches:
+      - main
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+ # Set environment variables
+      - name: Set Environment Variables
+        run: |
+          echo "TF_VAR_databricks_account_id=${{ secrets.databricks_account_id }}" >> $GITHUB_ENV
+          echo "TF_VAR_databricks_account_password=${{ secrets.databricks_account_password }}" >> $GITHUB_ENV
+          echo "TF_VAR_databricks_account_username=${{ secrets.databricks_account_username }}" >> $GITHUB_ENV
+          echo "TF_VAR_AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "TF_VAR_AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "TF_VAR_region=${{ secrets.region }}" >> $GITHUB_ENV
+    
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.3.0
+
+      - name: Terraform Init
+        run: terraform init -backend-config="access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" -backend-config="secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" -backend-config="region=us-east-2"
+        
+
+      - name: Terraform Plan
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -input=false tfplan
+
+        
+# # Create Databricks workspace
+#       - name: Create Databricks Workspace
+#         run: |
+#           # Your Terraform commands to create Databricks workspace
+#           cd terraform/aws_databricks
+#           terraform init
+#           terraform plan -out=tfplan
+#           terraform apply tfplan -auto-approve
+
+# # Configure AWS resources
+#       - name: Configure AWS Resources
+#         run: |
+#           # Your Terraform commands to configure AWS resources
+#           cd terraform/aws_resources
+#           terraform init
+#           terraform plan -out=tfplan
+#           terraform apply tfplan -auto-approve
+  # deploy_databricks:
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+      # - name: Deploy Databricks Workspace
+      #   # run: |
+        #   # Use Databricks CLI or API to deploy Databricks workspace
+        #   # Example:
+        #   # databricks configure --token "${{ secrets.DATABRICKS_TOKEN }}"
+        #   # databricks workspace create --name <workspace-name> --region ap-south-1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# name: Terraform Databricks Workspace
+# on:
+#   push:
+#     branches:
+#       - main
+# env:
+#   TF_VERSION: "1.0.0" # You can specify the version of Terraform you want to use
+#   AWS_DEFAULT_REGION: "us-east-2"
+# jobs:
+#   validate:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v2
+#     - name: Setup Terraform
+#       uses: hashicorp/setup-terraform@v1
+#       with:
+#         terraform_version: ${{ env.TF_VERSION }}
+#     - name: Terraform Init
+#       run: |
+#         rm -rf .terraform
+#         terraform --version
+#         terraform init -backend-config="access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" -backend-config="secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" -backend-config="region=${{ env.AWS_DEFAULT_REGION }}"
+#     - name: Install AWS CLI
+#       run: |
+#         sudo apt-get update
+#         sudo apt-get install -y python3 python3-pip
+#         pip3 install awscli
+#     - name: Configure AWS Credentials
+#       run: |
+#         aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         aws configure set region ${{ env.AWS_DEFAULT_REGION }}
+#         aws sts get-caller-identity
+#     - name: Get Caller Identity
+#       run: aws sts get-caller-identity
+
+
+
+#     - name: Terraform Validate
+#       run: terraform validate
+#   plan:
+#     needs: validate
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v2
+#     - name: Terraform Plan
+#       run: terraform plan -var-file="terraform.tfvars" -out "tfplan1"
+#       env:
+#         TF_CLI_ARGS: "-input=false"
+#     - name: Upload Terraform Plan
+#       uses: actions/upload-artifact@v2
+#       with:
+#         name: tfplan1
+#         path: tfplan1
+
+#     - name: Terraform Init
+#       run: terraform init -backend-config="access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" -backend-config="secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" -backend-config="region=us-east-2"
+ 
+#   apply:
+  
+#     needs: plan
+#     runs-on: ubuntu-latest
+#     if: github.ref == 'refs/heads/main' # You can change this to the branch you want to deploy from
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v2
+#     - name: Download Terraform Plan
+#       uses: actions/download-artifact@v2
+#       with:
+#         name: tfplan1
+#     - name: Terraform Apply
+#       run: terraform apply -input=false tfplan1
+#       env:
+#         TF_CLI_ARGS: "-input=false"
+#   # destroy:
+#   #   runs-on: ubuntu-latest
+#   #   if: github.ref == 'refs/heads/main' # You can change this to the branch you want to deploy from
+#   #   steps:
+#   #   - name: Checkout code
+#   #     uses: actions/checkout@v2
+#   #   - name: Terraform Destroy
+#   #     run: terraform destroy --auto-approve
+#   #     env:
+#   #       TF_CLI_ARGS: "-auto-approve"
